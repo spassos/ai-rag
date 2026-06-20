@@ -16,7 +16,7 @@ flowchart TD
 
     subgraph Indexacao["2. Indexação (LightRAG)"]
         D --> E[LightRAG: extração de<br/>entidades e relações]
-        E --> F[(Cloud SQL — Postgres + pgvector<br/>grafo + índice vetorial)]
+        E --> F[(Cloud Storage — file-based<br/>NanoVectorDB + NetworkX + JSON)]
         E -. embeddings .-> G[Vertex AI / API Claude]
     end
 
@@ -45,8 +45,9 @@ flowchart TD
    contrato, licitação, empenho…) e **relações** entre elas, e gera descrições
    curtas por entidade.
 2. Embeddings são gerados via **Vertex AI** (ou API Claude) — custo por chamada.
-3. Grafo de conhecimento **e** índice vetorial são persistidos no **Cloud SQL
-   (PostgreSQL + `pgvector`)**, que serve como backend único do LightRAG.
+3. Grafo de conhecimento **e** índice vetorial são persistidos pelos **backends
+   file-based nativos do LightRAG** — NanoVectorDB (vetores), NetworkX (grafo) e
+   JSON (KV/doc-status) — gravados no **Cloud Storage**. Sem servidor de banco.
 
 ## Fluxo de consulta
 
@@ -62,7 +63,7 @@ flowchart TD
 | Componente lógico | Serviço GCP | Motivo |
 | --- | --- | --- |
 | Corpus bruto/versionado | Cloud Storage | Custo baixo por GB; versionamento simples |
-| Grafo + vetores (backend LightRAG) | Cloud SQL (Postgres + pgvector) | Backend único, barato e portável |
+| Grafo + vetores (backend LightRAG) | Cloud Storage (arquivos file-based) | Sem servidor de banco; custo de banco zero |
 | Serviço de consulta | Cloud Run | Escala a zero; paga só no uso |
 | Embeddings / LLM | Vertex AI ou API Claude | Pay-per-use, sem infra fixa |
 | Orquestração de ingestão (batch) | Cloud Run Jobs / Cloud Scheduler | Execução periódica sob demanda |
@@ -70,14 +71,24 @@ flowchart TD
 
 ## Decisões de Arquitetura (ADRs)
 
-### ADR-001 — Evitar serviços gerenciados caros
-**Contexto**: existem opções gerenciadas (Vertex AI Vector Search, Spanner Graph)
-que reduzem esforço de operação, mas têm custo fixo/alto.
-**Decisão**: usar **LightRAG self-hosted** com **PostgreSQL + pgvector** (Cloud
-SQL) como backend único para vetores e grafo.
-**Consequências**: custo significativamente menor e **portabilidade** (Postgres
-roda em qualquer lugar). Em troca, assumimos a operação do backend. ✔️ Alinhado a
+### ADR-001 — Armazenamento file-based no Cloud Storage (sem banco gerenciado)
+**Contexto**: existem opções gerenciadas (Cloud SQL, Vertex AI Vector Search,
+Spanner Graph) que reduzem esforço de operação, mas têm custo fixo/alto. O LightRAG
+separa o armazenamento em 4 tipos plugáveis (KV, Vetorial, Grafo, Doc-Status) e seu
+**padrão é totalmente file-based**.
+**Decisão**: usar os **backends file-based nativos do LightRAG** — **NanoVectorDB**
+(vetores), **NetworkX** (grafo) e **JSON** (KV/doc-status) — persistidos no **Cloud
+Storage** (montado no Cloud Run via gcsfuse ou sincronizado no startup). **Nenhum
+servidor de banco de dados.**
+**Consequências**: custo de banco **zero** (paga só armazenamento por GB) e máxima
+**portabilidade** (roda igual localmente). Em troca, há **escritor único** (sem
+indexação concorrente) e a reindexação carrega estruturas em memória — aceitável
+para PoC e corpus pequeno/médio com carga read-heavy. ✔️ Alinhado a
 [Constituição P6](00-constitution.md).
+**Caminho de upgrade**: se a concorrência de escrita ou o volume exigirem, migrar
+para **Postgres + pgvector + AGE** numa **VM e2-micro (free tier)** — backends
+nativos do LightRAG — mantendo custo baixo e portabilidade, sem recorrer a Cloud
+SQL/Spanner gerenciados.
 
 ### ADR-002 — LightRAG como motor de RAG
 **Contexto**: gastos públicos formam uma rede de entidades interligadas; busca
@@ -102,6 +113,7 @@ AI** e **API Claude** conforme custo/qualidade.
 
 - **Qualidade da extração de entidades** (nomes de fornecedores inconsistentes,
   CNPJs ausentes) → tratar na normalização (RF1) e na ontologia (05).
-- **Volume de dados** pode crescer o custo do Postgres → particionar por
-  ano/órgão e considerar ingestão incremental (RNF2).
+- **Escritor único / volume** do armazenamento file-based → particionar o corpus
+  por ano/órgão, usar ingestão incremental (RNF2) e acionar o caminho de upgrade do
+  ADR-001 (Postgres em VM free-tier) quando necessário.
 - **Custo de embeddings** em reindexações totais → indexação incremental e cache.

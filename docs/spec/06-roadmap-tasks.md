@@ -20,7 +20,7 @@ Objetivo: qualidade de retrieval e fundamentação.
 
 - [ ] Implementar criação **determinística** de arestas na ingestão — [05](05-knowledge-graph.md).
 - [ ] Normalizar fornecedores por CNPJ; tratar entidades incompletas — [05](05-knowledge-graph.md).
-- [ ] Migrar backend do LightRAG para **PostgreSQL + pgvector** — ADR-001.
+- [ ] Confirmar backends **file-based** do LightRAG (NanoVectorDB + NetworkX + JSON) — ADR-001.
 - [ ] Implementar filtros estruturados (órgão, período, fornecedor, valor) — RF5.
 - [ ] Garantir formato de resposta com lista de fontes e fallback "não sei" — RF4, EARS-4.2.
 - [ ] Esboçar detecção de **pontos de atenção** (sem juízo de valor) — RF6, P4.
@@ -30,7 +30,7 @@ Objetivo: qualidade de retrieval e fundamentação.
 Objetivo: colocar em produção respeitando [Constituição P6](00-constitution.md).
 
 - [ ] Corpus bruto/versionado no **Cloud Storage** — RNF7.
-- [ ] **Cloud SQL (Postgres + pgvector)** como backend do LightRAG — ADR-001.
+- [ ] Persistir backends **file-based** do LightRAG no **Cloud Storage** (gcsfuse) — ADR-001.
 - [ ] Serviço de consulta em contêiner no **Cloud Run** (escala a zero) — ADR-003.
 - [ ] Ingestão agendada via **Cloud Scheduler + Cloud Run Jobs** — RNF2.
 - [ ] Segredos no **Secret Manager** — RNF5.

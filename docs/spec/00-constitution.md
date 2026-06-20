@@ -39,8 +39,9 @@ produzir respostas consistentes. Mudanças nos dados de origem são registradas.
 ## P6 — Eficiência de custo
 
 Custo é um requisito de primeira classe. Prefira serviços que **escalam a zero** e
-**cobram por uso**; evite serviços gerenciados caros (ex.: Spanner Graph, Vertex
-AI Vector Search) quando alternativas de baixo custo (ex.: PostgreSQL + pgvector)
+**cobram por uso**; evite serviços gerenciados caros (ex.: Cloud SQL, Spanner
+Graph, Vertex AI Vector Search) quando alternativas de baixo custo (ex.: backends
+file-based do LightRAG no Cloud Storage; ou Postgres + pgvector em VM free-tier)
 atendem ao requisito. A solução deve permanecer **portável** e barata de operar.
 
 ## P7 — Acessibilidade

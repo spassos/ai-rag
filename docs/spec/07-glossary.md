@@ -34,5 +34,8 @@
 | **LightRAG** | Motor de RAG que combina knowledge graph e busca vetorial dual-level. |
 | **Knowledge graph** | Grafo de entidades e relações (ver [05](05-knowledge-graph.md)). |
 | **Embedding** | Representação numérica de texto usada para busca por similaridade. |
-| **pgvector** | Extensão do PostgreSQL para armazenar e buscar embeddings. |
+| **NanoVectorDB** | Backend vetorial file-based padrão do LightRAG (sem servidor). |
+| **NetworkX** | Biblioteca Python usada pelo LightRAG para o grafo file-based padrão. |
+| **gcsfuse** | Adaptador que monta um bucket do Cloud Storage como sistema de arquivos. |
+| **pgvector** | Extensão do PostgreSQL para embeddings (caminho de upgrade do ADR-001). |
 | **Ponto de atenção** | Padrão atípico sinalizado para investigação — **não** é acusação ([P4](00-constitution.md)). |

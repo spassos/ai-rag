@@ -31,12 +31,14 @@ respostas compreensíveis — sempre rastreáveis até o registro oficial.
 | Motor RAG | **LightRAG** (knowledge graph + retrieval dual-level) |
 | Nuvem | **Google Cloud Platform** (foco em baixo custo / pay-per-use) |
 | Armazenamento de corpus | Cloud Storage |
-| Vetores + grafo | Cloud SQL (PostgreSQL + `pgvector`) |
+| Vetores + grafo | Backends nativos do LightRAG **file-based** (NanoVectorDB + NetworkX + JSON) persistidos no Cloud Storage |
 | Serviço de consulta | Cloud Run (escala a zero) |
 | Embeddings / LLM | Vertex AI ou API Claude |
 
-> Serviços gerenciados caros (Spanner Graph, Vertex AI Vector Search) foram
-> **deliberadamente evitados** — ver [ADRs em `03-architecture.md`](docs/spec/03-architecture.md).
+> **Sem banco de dados gerenciado**: usamos os backends file-based do LightRAG
+> persistidos no Cloud Storage (custo de banco = zero). Serviços gerenciados caros
+> (Cloud SQL, Spanner Graph, Vertex AI Vector Search) foram **deliberadamente
+> evitados** — ver [ADRs em `03-architecture.md`](docs/spec/03-architecture.md).
 
 ## Como navegar a especificação
 
