@@ -1,0 +1,57 @@
+name: CD
+
+# Deploy só após o CI (com smoke offline) passar na branch principal — gate P9.
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  id-token: write # Workload Identity Federation (sem chave de SA estática).
+
+env:
+  REGION: southamerica-east1
+
+jobs:
+  deploy:
+    name: Build + Terraform apply + Deploy Cloud Run
+    runs-on: ubuntu-latest
+    # Protegido: exige aprovação de ambiente nas settings do repositório.
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Autenticar na GCP (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build e push da imagem
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/lupa-publica-prod/api:${GITHUB_SHA}"
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform apply
+        working-directory: infra/terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state"
+          terraform apply -auto-approve \
+            -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var="region=${REGION}" \
+            -var="environment=prod" \
+            -var="image=${IMAGE}"
+
+      - name: Smoke test pós-deploy
+        run: |
+          URL=$(terraform -chdir=infra/terraform output -raw service_url)
+          curl -fsS "$URL/health" || echo "TODO: expor endpoint /health no serviço"

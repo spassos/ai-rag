@@ -1,0 +1,5 @@
+# Dependências de runtime da Lupa Pública (PoC — Fase 1).
+# Mantidas em sincronia com [project.dependencies] do pyproject.toml.
+lightrag-hku==1.5.3
+numpy>=1.26
+python-dotenv>=1.0

@@ -59,6 +59,32 @@ A documentação segue a convenção **Spec-Driven Development**
 | 07 | [Glossário](docs/spec/07-glossary.md) | Termos de finanças públicas |
 | 08 | [Infra e CI/CD](docs/spec/08-infra-cicd.md) | Terraform + GitHub Actions + teste local antes do deploy |
 
+## Rodar localmente (PoC — Fase 1)
+
+O pipeline já roda **offline** no sandbox, com o provedor `fake` (sem rede, sem
+chaves de API) — é o gate de teste local antes de qualquer deploy
+([Constituição P9](docs/spec/00-constitution.md)).
+
+```bash
+make install        # instala o pacote + ferramentas de dev
+make check          # lint + testes + smoke offline (o que o CI roda)
+
+# ou individualmente:
+make smoke          # roda o pipeline ponta a ponta sobre a fixture de exemplo
+lupa-publica query "contratos de seringas para a saúde"
+```
+
+Estrutura do código:
+
+| Caminho | Papel |
+| --- | --- |
+| `src/lupa_publica/ingest/` | Coleta (API/fixtures) e normalização canônica (RF1) |
+| `src/lupa_publica/index/` | Wiring do LightRAG file-based (ADR-001) |
+| `src/lupa_publica/query/` | Consulta com citação de fonte (RF3/RF4) |
+| `src/lupa_publica/providers/` | Abstração de LLM/embeddings; provedor `fake` offline (ADR-004) |
+| `infra/terraform/` | Infra GCP como código (ADR-005) |
+| `.github/workflows/` | CI/CD (ADR-006) |
+
 ## Licença e dados
 
 O projeto consome exclusivamente **dados públicos abertos** de fontes oficiais
