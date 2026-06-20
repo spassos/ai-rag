@@ -49,3 +49,19 @@ atendem ao requisito. A solução deve permanecer **portável** e barata de oper
 A interface e as respostas devem ser compreensíveis para um cidadão **sem
 formação técnica ou jurídica**. Jargão de finanças públicas deve ser explicado
 (ver [Glossário](07-glossary.md)).
+
+## P8 — Infraestrutura como Código
+
+Toda a infraestrutura na GCP é provisionada via **Terraform**, versionada no
+repositório. Nada de cliques manuais no console: a infra deve ser reprodutível,
+revisável em pull request e destruível/recriável de forma determinística. O
+deploy (build, push de imagem, apply) é automatizado por **CI/CD com GitHub
+Actions** (ver [08-infra-cicd.md](08-infra-cicd.md)).
+
+## P9 — Testar localmente antes de implantar
+
+Nenhuma infraestrutura sobe para a GCP sem antes passar por um **teste local no
+sandbox**. O pipeline (ingestão → indexação → consulta) deve rodar
+**offline**, com um provedor *fake* de LLM/embeddings, validando o fluxo
+ponta a ponta sem custo e sem credenciais. Só após o teste local verde é que se
+aplica o Terraform e se faz o deploy na nuvem.

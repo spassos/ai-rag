@@ -68,6 +68,8 @@ flowchart TD
 | Embeddings / LLM | Vertex AI ou API Claude | Pay-per-use, sem infra fixa |
 | Orquestração de ingestão (batch) | Cloud Run Jobs / Cloud Scheduler | Execução periódica sob demanda |
 | Segredos (chaves) | Secret Manager | Gestão segura de credenciais |
+| Provisionamento da infra | Terraform (`infra/terraform/`) | IaC reprodutível ([ADR-005](#adr-005--infraestrutura-como-código-com-terraform)) |
+| Build / deploy automatizado | GitHub Actions | CI/CD ([ADR-006](#adr-006--cicd-com-github-actions)) |
 
 ## Decisões de Arquitetura (ADRs)
 
@@ -106,8 +108,27 @@ conversacional. Revisar caso latência (RNF3) seja insuficiente.
 
 ### ADR-004 — Provedor de LLM/embeddings flexível
 **Decisão**: abstrair o provedor de LLM/embeddings para alternar entre **Vertex
-AI** e **API Claude** conforme custo/qualidade.
-**Consequências**: evita lock-in; exige uma camada de abstração fina no código.
+AI** e **API Claude** conforme custo/qualidade. A abstração inclui um provedor
+**fake/offline** (determinístico) para testes e para o smoke test no sandbox.
+**Consequências**: evita lock-in; permite teste local sem credenciais ([P9](00-constitution.md));
+exige uma camada de abstração fina no código.
+
+### ADR-005 — Infraestrutura como Código com Terraform
+**Contexto**: a infra precisa ser reprodutível, revisável e barata de operar
+([P6](00-constitution.md), [P8](00-constitution.md)).
+**Decisão**: descrever toda a infra GCP (bucket Cloud Storage, serviço Cloud Run,
+Cloud Run Jobs de ingestão, Cloud Scheduler, Secret Manager, service accounts/IAM)
+em **Terraform**, em `infra/terraform/`, com **GCS backend** para o state.
+**Consequências**: infra versionada e destruível/recriável; mudanças passam por
+`terraform plan` em PR antes do `apply`. Detalhes em [08-infra-cicd.md](08-infra-cicd.md).
+
+### ADR-006 — CI/CD com GitHub Actions
+**Decisão**: usar **GitHub Actions** para CI (lint + testes + **smoke test
+offline**) em todo push/PR, e CD (build da imagem, push, `terraform apply`, deploy
+no Cloud Run) em merge para a branch principal, com autenticação via **Workload
+Identity Federation** (sem chaves de service account de longa duração).
+**Consequências**: o gate de [P9](00-constitution.md) (teste local verde) é
+aplicado automaticamente antes de qualquer deploy. Detalhes em [08-infra-cicd.md](08-infra-cicd.md).
 
 ## Riscos arquiteturais
 

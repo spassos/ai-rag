@@ -12,7 +12,8 @@ Objetivo: provar o fluxo ponta a ponta localmente, com um subconjunto de dados.
 - [ ] Normalizar registros para o esquema canônico de [04-data-sources.md](04-data-sources.md) — RF1.
 - [ ] Rodar LightRAG localmente (storage de arquivo) e indexar o subconjunto — RF2.
 - [ ] Validar consultas básicas em linguagem natural com citação de fonte — RF3, RF4.
-- [ ] Definir camada de abstração de LLM/embeddings (Vertex AI ↔ Claude) — ADR-004.
+- [ ] Definir camada de abstração de LLM/embeddings (Vertex AI ↔ Claude ↔ **fake offline**) — ADR-004.
+- [ ] **Smoke test offline no sandbox** (`scripts/local_smoke.sh`) rodando o pipeline com provedor fake — [P9](00-constitution.md).
 
 ## Fase 2 — Knowledge graph + consulta com citações
 
@@ -25,7 +26,19 @@ Objetivo: qualidade de retrieval e fundamentação.
 - [ ] Garantir formato de resposta com lista de fontes e fallback "não sei" — RF4, EARS-4.2.
 - [ ] Esboçar detecção de **pontos de atenção** (sem juízo de valor) — RF6, P4.
 
-## Fase 3 — Deploy em GCP (baixo custo)
+## Fase 3 — Infra como código + CI/CD
+
+Objetivo: automatizar build/deploy de forma reprodutível ([P8](00-constitution.md)).
+
+- [ ] Escrever a infra GCP em **Terraform** (`infra/terraform/`) — [08](08-infra-cicd.md), ADR-005.
+- [ ] Workflow **`ci.yml`**: lint + pytest + **smoke offline** + `terraform validate` — ADR-006, [P9](00-constitution.md).
+- [ ] Workflow **`cd.yml`**: build + push + `terraform apply` + deploy Cloud Run (Workload Identity Federation) — ADR-006.
+- [ ] `Dockerfile` do serviço de consulta e do job de ingestão.
+
+## Fase 4 — Deploy em GCP (baixo custo)
+
+> ⚠️ **Gate [P9](00-constitution.md)**: só executar esta fase **após** o smoke
+> test local/offline passar no sandbox e no CI.
 
 Objetivo: colocar em produção respeitando [Constituição P6](00-constitution.md).
 
@@ -36,7 +49,7 @@ Objetivo: colocar em produção respeitando [Constituição P6](00-constitution.
 - [ ] Segredos no **Secret Manager** — RNF5.
 - [ ] Observabilidade/logs de auditoria de ingestão e respostas — RNF6.
 
-## Fase 4 — UX, avaliação e expansão
+## Fase 5 — UX, avaliação e expansão
 
 Objetivo: usabilidade para leigos e qualidade mensurável.
 
@@ -51,7 +64,8 @@ Objetivo: usabilidade para leigos e qualidade mensurável.
 
 | Marco | Critério de "pronto" |
 | --- | --- |
-| M1 — PoC local | Pergunta respondida com citação a partir de dados reais |
+| M1 — PoC local | Pipeline ponta a ponta + **smoke test offline** verde no sandbox |
 | M2 — Grafo+citações | Consultas de relação funcionam; respostas sempre fundamentadas |
-| M3 — Produção GCP | Serviço público no Cloud Run com custo monitorado |
-| M4 — Avaliado | Métricas de qualidade/latência/custo em painel |
+| M3 — IaC + CI/CD | Terraform validado e Actions com smoke offline obrigatório |
+| M4 — Produção GCP | Serviço público no Cloud Run com custo monitorado |
+| M5 — Avaliado | Métricas de qualidade/latência/custo em painel |

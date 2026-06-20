@@ -34,6 +34,8 @@ respostas compreensíveis — sempre rastreáveis até o registro oficial.
 | Vetores + grafo | Backends nativos do LightRAG **file-based** (NanoVectorDB + NetworkX + JSON) persistidos no Cloud Storage |
 | Serviço de consulta | Cloud Run (escala a zero) |
 | Embeddings / LLM | Vertex AI ou API Claude |
+| Infra como código | **Terraform** (`infra/terraform/`) |
+| CI/CD | **GitHub Actions** (lint + testes + smoke offline + deploy) |
 
 > **Sem banco de dados gerenciado**: usamos os backends file-based do LightRAG
 > persistidos no Cloud Storage (custo de banco = zero). Serviços gerenciados caros
@@ -55,6 +57,7 @@ A documentação segue a convenção **Spec-Driven Development**
 | 05 | [Knowledge Graph](docs/spec/05-knowledge-graph.md) | Ontologia do domínio: entidades e relações |
 | 06 | [Roadmap e Tarefas](docs/spec/06-roadmap-tasks.md) | Fases e backlog para implementação |
 | 07 | [Glossário](docs/spec/07-glossary.md) | Termos de finanças públicas |
+| 08 | [Infra e CI/CD](docs/spec/08-infra-cicd.md) | Terraform + GitHub Actions + teste local antes do deploy |
 
 ## Licença e dados
 
