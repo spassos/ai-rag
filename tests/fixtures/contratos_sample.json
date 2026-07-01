@@ -1,0 +1,35 @@
+[
+  {
+    "documento_id": "CT-2025-0001",
+    "tipo": "contrato",
+    "orgao_codigo": "36000",
+    "orgao_nome": "Ministério da Saúde",
+    "fornecedor_cnpj": "11.111.111/0001-11",
+    "fornecedor_nome": "ACME Materiais Hospitalares LTDA",
+    "objeto": "Aquisição de seringas e agulhas descartáveis para a rede pública",
+    "valor": 1200000.0,
+    "data": "2025-03-14"
+  },
+  {
+    "documento_id": "CT-2025-0002",
+    "tipo": "contrato",
+    "orgao_codigo": "26000",
+    "orgao_nome": "Ministério da Educação",
+    "fornecedor_cnpj": "22.222.222/0001-22",
+    "fornecedor_nome": "Beta Alimentação Escolar SA",
+    "objeto": "Fornecimento de merenda escolar para municípios",
+    "valor": 800000.0,
+    "data": "2025-02-10"
+  },
+  {
+    "documento_id": "CT-2025-0003",
+    "tipo": "contrato",
+    "orgao_codigo": "36000",
+    "orgao_nome": "Ministério da Saúde",
+    "fornecedor_cnpj": "33.333.333/0001-33",
+    "fornecedor_nome": "Gamma Equipamentos Médicos LTDA",
+    "objeto": "Manutenção de aparelhos de ventilação pulmonar em hospitais",
+    "valor": 2500000.0,
+    "data": "2025-05-22"
+  }
+]
